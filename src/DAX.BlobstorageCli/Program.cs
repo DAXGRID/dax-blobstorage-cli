@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using Azure.Storage.Blobs;
 
 namespace DAX.BlobstorageCli;
 
@@ -6,48 +7,63 @@ internal sealed class Program
 {
     static async Task<int> Main(string[] args)
     {
-        var rootCommand = new RootCommand("Sample app for System.CommandLine");
+        const string connectionString = "";
 
-        var fileCommandOption = new Option<bool>(
-            name: "--file",
-            description: "The file to upload.")
+        var rootCommand = new RootCommand("DAX Blobstorage CLI.");
+
+        var uploadFileOption = new Option<string>(
+            name: "--upload-file-path",
+            description: "The file path to the file you want to upload to blobstorage.")
         {
             IsRequired = true,
         };
 
-        fileCommandOption.AddAlias("-f");
+        uploadFileOption.AddAlias("-f");
 
         var uploadCommand = new Command("upload", "Upload a file to blobstorage");
-        uploadCommand.Add(fileCommandOption);
+        uploadCommand.Add(uploadFileOption);
 
-        var outputCommandOption = new Option<string>(
-            name: "--output",
+        var downloadOutputPathCommandOption = new Option<string>(
+            name: "--output-file-path",
             description: "The output path where the file should be downloaded to.")
         {
             IsRequired = true
         };
 
-        outputCommandOption.AddAlias("-o");
+        downloadOutputPathCommandOption.AddAlias("-o");
 
         var downloadCommand = new Command("download", "Download a file from blobstorage");
 
-        downloadCommand.Add(outputCommandOption);
+        downloadCommand.Add(downloadOutputPathCommandOption);
+
+        uploadCommand.SetHandler(async (uploadFilePath) =>
+        {
+            var client = new BlobContainerClient(connectionString, "input");
+            await UploadFromFileAsync(client, uploadFilePath).ConfigureAwait(false);
+
+            Console.WriteLine($"Upload file path: {uploadFilePath}");
+        },
+        uploadFileOption);
+
+        downloadCommand.SetHandler((downloadPath) =>
+        {
+            var client = new BlobContainerClient(connectionString, "output");
+            Console.WriteLine($"Download file path: {downloadPath}");
+        },
+        downloadOutputPathCommandOption);
 
         rootCommand.Add(downloadCommand);
         rootCommand.Add(uploadCommand);
 
-        uploadCommand.SetHandler((outputPath) =>
-        {
-            Console.WriteLine($"Upload file path: {outputPath}");
-        },
-        outputCommandOption);
-
-        downloadCommand.SetHandler((downloadPath) =>
-        {
-            Console.WriteLine($"Download file path: {downloadPath}");
-        },
-        outputCommandOption);
-
         return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+    }
+
+    public static async Task UploadFromFileAsync(
+        BlobContainerClient containerClient,
+        string localFilePath)
+    {
+        string fileName = Path.GetFileName(localFilePath);
+        var blobClient = containerClient.GetBlobClient(fileName);
+        await blobClient.UploadAsync(localFilePath, true).ConfigureAwait(false);
     }
 }
