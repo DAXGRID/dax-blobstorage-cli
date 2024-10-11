@@ -4,23 +4,34 @@ namespace DAX.BlobstorageCli;
 
 internal sealed class Program
 {
-   static async Task<int> Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("Sample app for System.CommandLine");
 
-        var uploadCommandOptions = new Option<bool>(
+        var fileCommandOption = new Option<bool>(
             name: "--file",
-            description: "The file to upload.");
+            description: "The file to upload.")
+        {
+            IsRequired = true,
+        };
+
+        fileCommandOption.AddAlias("-f");
 
         var uploadCommand = new Command("upload", "Upload a file to blobstorage");
-        uploadCommand.Add(uploadCommandOptions);
+        uploadCommand.Add(fileCommandOption);
 
-        var downloadCommandOptions = new Option<string>(
+        var outputCommandOption = new Option<string>(
             name: "--output",
-            description: "The output path where the file should be downloaded to.");
+            description: "The output path where the file should be downloaded to.")
+        {
+            IsRequired = true
+        };
+
+        outputCommandOption.AddAlias("-o");
 
         var downloadCommand = new Command("download", "Download a file from blobstorage");
-        downloadCommand.Add(downloadCommandOptions);
+
+        downloadCommand.Add(outputCommandOption);
 
         rootCommand.Add(downloadCommand);
         rootCommand.Add(uploadCommand);
@@ -29,7 +40,7 @@ internal sealed class Program
         {
             Console.WriteLine($"Output path: {outputPath}");
         },
-        downloadCommandOptions);
+        outputCommandOption);
 
         return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
