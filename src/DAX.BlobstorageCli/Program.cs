@@ -38,7 +38,13 @@ internal sealed class Program
 
         uploadCommand.SetHandler((outputPath) =>
         {
-            Console.WriteLine($"Output path: {outputPath}");
+            Console.WriteLine($"Upload file path: {outputPath}");
+        },
+        outputCommandOption);
+
+        downloadCommand.SetHandler((downloadPath) =>
+        {
+            Console.WriteLine($"Download file path: {downloadPath}");
         },
         outputCommandOption);
 
