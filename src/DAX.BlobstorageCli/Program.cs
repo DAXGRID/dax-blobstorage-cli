@@ -7,7 +7,7 @@ internal sealed class Program
 {
     static async Task<int> Main(string[] args)
     {
-        const string connectionString = "";
+        var connectionString = Environment.GetEnvironmentVariable("DAX_BLOB_STORAGE_CLI_CONNECTION_STRING");
 
         var rootCommand = new RootCommand("DAX Blobstorage CLI.");
 
