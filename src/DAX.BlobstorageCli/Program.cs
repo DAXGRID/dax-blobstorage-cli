@@ -29,6 +29,15 @@ internal sealed class Program
 
         uploadFileOption.AddAlias("-f");
 
+        var overwriteFileOption = new Option<bool>(
+            name: "--overwrite",
+            description: "If the file already exists, overwrite it.")
+        {
+            IsRequired = false,
+        };
+
+        uploadFileOption.AddAlias("-f");
+
         var downloadOutputFilePathOption = new Option<string>(
             name: "--output-file-path",
             description: "The output path where the file should be downloaded to.")
@@ -52,15 +61,16 @@ internal sealed class Program
         uploadCommand.Add(uploadFileOption);
         uploadCommand.Add(blobStorageContainerNameOption);
 
-        uploadCommand.SetHandler(async (uploadFilePath, blobStorageContainerName) =>
+        uploadCommand.SetHandler(async (uploadFilePath, blobStorageContainerName, overwriteFileOption) =>
         {
             var client = new BlobContainerClient(connectionString, blobStorageContainerName);
             Console.WriteLine($"Starting uploading the file '{uploadFilePath}' to the container '{blobStorageContainerName}'");
-            await UploadFromFileAsync(client, uploadFilePath).ConfigureAwait(false);
+            await UploadFromFileAsync(client, uploadFilePath, overwriteFileOption).ConfigureAwait(false);
             Console.WriteLine($"Finished uploading the file '{uploadFilePath}' to the container '{blobStorageContainerName}'");
         },
         uploadFileOption,
-        blobStorageContainerNameOption);
+        blobStorageContainerNameOption,
+        overwriteFileOption);
 
         // Download command
         var downloadCommand = new Command("download", "Download a file from blobstorage");
@@ -87,11 +97,12 @@ internal sealed class Program
 
     public static async Task UploadFromFileAsync(
         BlobContainerClient containerClient,
-        string localFilePath)
+        string localFilePath,
+        bool overwrite)
     {
         string fileName = Path.GetFileName(localFilePath);
         var blobClient = containerClient.GetBlobClient(fileName);
-        await blobClient.UploadAsync(localFilePath, true).ConfigureAwait(false);
+        await blobClient.UploadAsync(localFilePath, overwrite).ConfigureAwait(false);
     }
 
     public static async Task DownloadFileAsync(
