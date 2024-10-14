@@ -110,7 +110,6 @@ internal sealed class Program
         string fileName,
         string downloadOutputFilePath)
     {
-
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient
             .DownloadToAsync(Path.Combine(downloadOutputFilePath, fileName))
