@@ -5,7 +5,7 @@ namespace DAX.BlobstorageCli;
 
 internal sealed class Program
 {
-    static async Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("DAX_BLOB_STORAGE_CLI_CONNECTION_STRING");
 
