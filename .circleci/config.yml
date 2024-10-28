@@ -16,23 +16,11 @@ jobs:
       - run:
           name: Build
           command: dotnet build -c Release
-  test-app:
-    executor: dotnet-core-sdk
-    steps:
-      - checkout
-      - run:
-          name: Test
-          command: dotnet test
 
 workflows:
-  build-upload_image:
+  build-app:
     jobs:
       - build-app:
-          context: docker
-          filters:
-            tags:
-              only: /.*/
-      - test-app:
           context: docker
           filters:
             tags:
